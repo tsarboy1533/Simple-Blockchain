@@ -2,12 +2,13 @@ use crate::block::{Block, Transaction}; // Transactionもインポートする
 
 pub struct Blockchain {
     pub chain: Vec<Block>,
+    pub mempool: Vec<Transaction>,
 }
 
 impl Blockchain {
     pub fn new() -> Self {
         // ジェネシスブロックも Vec<Transaction> を受け取るように修正
-        // 最初は空のリスト vec![] を渡すのが一般的です
+        // 最初は空のリスト vec![] を渡す
         let genesis_block = Block::new(
             0, 
             String::from("0"), 
@@ -16,6 +17,7 @@ impl Blockchain {
         
         Blockchain {
             chain: vec![genesis_block],
+            mempool: Vec::new(),
         }
     }
 
@@ -29,5 +31,37 @@ impl Blockchain {
         
         new_block.mine(4); 
         self.chain.push(new_block);
+    }
+
+    pub fn add_transaction(&mut self, tx: Transaction, public_key_bytes: &[u8]) -> bool {
+        // 前に作った verify メソッドで署名をチェック！
+        if tx.verify(public_key_bytes) {
+            println!("Transaction from {} is valid. Added to Mempool!", tx.sender);
+            self.mempool.push(tx); // 箱にプッシュ！
+            true
+        } else {
+            println!("Transaction invalid! Rejected.");
+            false
+        }
+    }
+
+    // Mempoolに溜まった取引をまとめてブロック化（マイニング）する
+    pub fn mine_mempool(&mut self) {
+        if self.mempool.is_empty() {
+            println!("Mempool is empty. Nothing to mine.");
+            return;
+        }
+
+        println!("Mining a new block with {} transactions...", self.mempool.len());
+
+        // 1. 現在のMempoolの中身をまるごとコピーして、ブロック用のデータにする
+        let transactions_to_mine = self.mempool.clone();
+
+        // 2. 既存の add_block 関数を呼び出す（引数に取引の束を渡す）
+        self.add_block(transactions_to_mine);
+
+        // 3. 無事にブロックに入ったので、Mempool（待合室）を空っぽにする！
+        self.mempool.clear();
+        println!("Mempool cleared.");
     }
 }
