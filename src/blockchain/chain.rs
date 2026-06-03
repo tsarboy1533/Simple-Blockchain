@@ -1,4 +1,4 @@
-use crate::block::{Block, Transaction}; // Transactionもインポートする
+use crate::blockchain::block::{Block, Transaction};
 
 pub struct Blockchain {
     pub chain: Vec<Block>,

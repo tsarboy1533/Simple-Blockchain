@@ -1,11 +1,11 @@
-mod block;
 mod blockchain;
+mod p2p;
 
+use blockchain::block::Transaction; // Transactionを使えるようにする
+use blockchain::chain::Blockchain;
 use ed25519_dalek::SigningKey;
 use rand::RngCore;
 
-use block::Transaction; // Transactionを使えるようにする
-use blockchain::Blockchain;
 
 fn main() {
     // --- 準備：鍵ペアの生成 ---
